@@ -4,7 +4,11 @@ import path from 'node:path';
 const ASSET_EXT =
   /\.(?:jpe?g|png|gif|svg|webp|ico|bmp|avif|css|js|mjs|cjs|json|xml|txt|rss|atom|pdf|zip|t?gz|rar|7z|mp[34]|m4a|wav|ogg|flac|webm|mov|avi|mkv|woff2?|ttf|otf|eot|csv|tsv|xlsx?|docx?|pptx?|dmg|exe|apk|wasm)$/i;
 
-/** Parse + normalize a URL. Drops the fragment. Returns null for non-http(s). */
+/**
+ * Parse + normalize a URL. Drops the fragment, returns null for non-http(s),
+ * and canonicalizes a trailing `/index.html` to its directory so `/` and
+ * `/index.html` resolve to one page (avoids double-capturing + file collisions).
+ */
 export function normalizeUrl(raw: string, base?: string): string | null {
   let u: URL;
   try {
@@ -14,6 +18,7 @@ export function normalizeUrl(raw: string, base?: string): string | null {
   }
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
   u.hash = '';
+  u.pathname = u.pathname.replace(/\/index\.html?$/i, '/');
   return u.toString();
 }
 
